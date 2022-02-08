@@ -18,10 +18,7 @@ class Stack {
 
  public:
   Stack(){
-      //    this->start = new Element<T>(NULL, nullptr);
-      //      start->value = NULL;
-      //      start->link = nullptr;
-      this->last = (Element<T>*)malloc(sizeof(Element<T>));
+     this->last = (Element<T>*)malloc(sizeof(Element<T>));
       this->start = (Element<T>*)malloc(sizeof(Element<T>));
   };
   Stack(T valueStart) {
@@ -46,20 +43,6 @@ class Stack {
     temp->value = std::move(value);
     temp->link = oldlink;
     this->last = temp;
-    //    if (start->link == NULL) {
-    //      start->value = std::move(*value);
-    //      start->link = nullptr;
-    //      return;
-    //    } else {
-    //      Element<T>* goElem;
-    //      auto newElem = new Element<T>(std::move(*value), nullptr);
-    //      goElem = start;
-    //      while (goElem->link != nullptr) {
-    //        goElem = goElem->link;
-    //      }
-    //      *goElem->link = newElem;
-    //      last = newElem;
-    //      return;
   };
 
   void push(const T& value) {
@@ -71,21 +54,6 @@ class Stack {
     temp->value = *value;
     temp->link = oldlink;
     this->last = temp;
-    //  if (start->value == NULL) {
-    //    start->value = *value;
-    //    start->link = nullptr;
-    //    return;
-    //  } else {
-    //    Element<T>* goElem;
-    //    auto newElem = new Element<T>(*value, nullptr);
-    //    goElem = start;
-    //    while (goElem->link != nullptr) {
-    //      goElem = goElem->link;
-    //    }
-    //    *goElem->link = newElem;
-    //    last = newElem;
-    //    return;
-    //  }
   };
   void pop() {
     Element<T>* temp;
@@ -96,17 +64,6 @@ class Stack {
     temp->link = last->link;
     free(last->link);
     this->last = temp;
-    //    Element<T> goElem(NULL, this->start->link);
-    //    Element<T>* tempElem = nullptr;
-    //    while (goElem.link != this->last) {
-    //      tempElem = goElem.link;
-    //      goElem = goElem.link;
-    //    }
-    //    if (this->last != nullptr) {
-    //      delete[](this->last);
-    //      this->last = tempElem;
-    //    }
-    //    return;
   };
   const T& head() const { return this->last->value; };
 };

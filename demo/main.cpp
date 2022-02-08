@@ -21,7 +21,7 @@
 // 2 хедера hpp
 //
 int main() {
-  Stack<int> stack(1);
+  Stack<int> stack;
   stack.push(10);
   stack.push(20);
   stack.push(30);

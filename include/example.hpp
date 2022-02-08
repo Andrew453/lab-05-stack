@@ -18,8 +18,9 @@ class Stack {
 
  public:
   Stack(){
+//    TODO через new
      this->last = (Element<T>*)malloc(sizeof(Element<T>));
-      this->start = (Element<T>*)malloc(sizeof(Element<T>));
+     this->start = (Element<T>*)malloc(sizeof(Element<T>));
   };
   Stack(T valueStart) {
     this->last = (Element<T>*)malloc(sizeof(Element<T>));
@@ -29,12 +30,12 @@ class Stack {
     this->start = this->last;
   }
   void push(T&& value) {
-//    if (this->start->value == NULL) {
-//      last->value = std::move(value);
-//      last->link = NULL;
-//      this->start = this->last;
-//      return;
-//    }
+    if (!this->start->value) {
+      last->value = std::move(value);
+      last->link = NULL;
+      this->start = this->last;
+      return;
+    }
     Element<T>* temp;
     Element<T>* oldlink;
     temp = (Element<T>*)malloc(sizeof(Element<T>));
@@ -51,7 +52,7 @@ class Stack {
     temp = (Element<T>*)malloc(sizeof(Element<T>));
     oldlink = last->link;
     last->link = temp;
-    temp->value = *value;
+    temp->value = value;
     temp->link = oldlink;
     this->last = temp;
   };

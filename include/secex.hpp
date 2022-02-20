@@ -1,79 +1,113 @@
-//
-// Created by prokiprok on 14.02.2022.
-//
+// Copyright 2020 Andrew Prokushev <senior.prockuschev2017@yandex.ru>
 
-#ifndef TEMPLATE_SECEX_H
-#define TEMPLATE_SECEX_H
+#ifndef INCLUDE_SECEX_HPP_
+#define INCLUDE_SECEX_HPP_
 #include <stdexcept>
+#include <utility>
 
-#include "example.hpp"
+#include "fisex.hpp"
 
 template <typename T>
 class StackSec {
  private:
   Element<T>* last;
   Element<T>* start;
+  bool notDeleted = true;
 
  public:
   StackSec() {
-    this->last = new Element<T>;
     this->start = new Element<T>;
+    this->last = this->start;
   }
-  explicit StackSec(T valueStart) {
-    this->last = new Element<T>;
+
+  explicit StackSec(T&& valueStart) {
     this->start = new Element<T>;
-    last->value = valueStart;
-    last->link = NULL;
-    this->start = this->last;
+    start->value = valueStart;
+    start->link = nullptr;
+    this->last = this->start;
   }
+
+  explicit StackSec(const T& valueStart) = delete;
+
   ~StackSec() {
-    //  TODO
+    Element<T>* temp;
+    if (this->notDeleted) {
+      while (this->start->link) {
+        temp = this->start;
+        while (temp->link != this->last) {
+          temp = temp->link;
+        }
+        if (last) {
+          delete (last);
+          temp->link = nullptr;
+        }
+        this->last = temp;
+      }
+      if (last) {
+        delete (last);
+      }
+      this->notDeleted = false;
+    }
   }
+
   template <typename... Args>
   void push_emplace(Args&&... args) {
     if (!this->start->value) {
-      last->value = std::move(T(std::forward<Args>(args)...));
-      last->link = NULL;
-      this->start = this->last;
+      last->value = {std::forward<Args>(args)...};
+      last->link = nullptr;
       return;
     }
-    Element<T>* temp;
-    Element<T>* oldlink;
-    temp = new Element<T>;
-    oldlink = last->link;
+    Element<T>* temp = new Element<T>;
     last->link = temp;
-    temp->value = std::move(T(std::forward<Args>(args)...));
-    temp->link = oldlink;
+    temp->value = {std::forward<Args>(args)...};
+    temp->link = nullptr;
     this->last = temp;
   }
+
   void push(T&& value) {
     if (!this->start->value) {
       last->value = std::move(value);
-      last->link = NULL;
-      this->start = this->last;
+      last->link = nullptr;
       return;
     }
-    Element<T>* temp;
-    Element<T>* oldlink;
-    temp = new Element<T>;
-    oldlink = last->link;
+    Element<T>* temp = new Element<T>;
     temp->value = std::move(value);
-    temp->link = oldlink;
+    temp->link = nullptr;
     this->last = temp;
-  };
-  const T& head() const { return this->last->value; };
-  T pop() {
-    Element<T>* temp;
-    temp = this->start;
-    while (temp->link != this->last) {
-      temp = temp->link;
-    }
-    temp->link = last->link;
-    T value = last->value;
-    delete (last);
-    this->last = temp;
-    return value;
-  };
- };
+  }
 
-#endif  // TEMPLATE_SECEX_H
+  const T& head() const { return this->last->value; }
+
+  T pop() {
+    if (!this->start->link) {
+      T value = last->value;
+      return value;
+    } else {
+      Element<T>* temp = this->start;
+      while (temp->link != this->last) {
+        temp = temp->link;
+      }
+      T value = last->value;
+      if (last) {
+        delete (last);
+        temp->link = nullptr;
+      }
+      this->last = temp;
+      return value;
+    }
+  }
+
+  Stack<T>& operator=(const Stack<T>& right) = delete;
+
+  Stack<T>& operator=(Stack<T>&& right) {
+    if ((this->start != right.start) || (this->last != right.last)) {
+      this->~Stack();
+      this->start = std::move(right.start);
+      this->last = std::move(right.last);
+      notDeleted = true;
+    }
+    return *this;
+  }
+};
+
+#endif  // INCLUDE_SECEX_HPP_

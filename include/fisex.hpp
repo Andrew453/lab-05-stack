@@ -1,8 +1,9 @@
-// Copyright 2021 Your Name <your_email>
+// Copyright 2020 Andrew Prokushev <senior.prockuschev2017@yandex.ru>
 
-#ifndef INCLUDE_EXAMPLE_HPP_
-#define INCLUDE_EXAMPLE_HPP_
+#ifndef INCLUDE_FISEX_HPP_
+#define INCLUDE_FISEX_HPP_
 #include <stdexcept>
+#include <utility>
 
 template <typename T>
 struct Element {
@@ -15,84 +16,106 @@ class Stack {
  private:
   Element<T>* last;
   Element<T>* start;
+  bool notDeleted;
 
  public:
   Stack() {
-    this->last = new Element<T>;
     this->start = new Element<T>;
-  };
-  explicit Stack(T valueStart) {
-    this->last = new Element<T>;
-    this->start = new Element<T>;
-    last->value = valueStart;
-    last->link = NULL;
-    this->start = this->last;
+    this->last = this->start;
+    this->notDeleted = true;
   }
+
+  explicit Stack(T&& valueStart) {
+    this->notDeleted = true;
+    this->start = new Element<T>;
+    start->value = valueStart;
+    start->link = nullptr;
+    this->last = this->start;
+  }
+
+  explicit Stack(T& value) = delete;
+
+  ~Stack() {
+    Element<T>* temp;
+    if (this->notDeleted) {
+      while (this->start->link) {
+        temp = this->start;
+        while (temp->link != this->last) {
+          temp = temp->link;
+        }
+        if (last) {
+          delete (last);
+          temp->link = nullptr;
+        }
+        this->last = temp;
+      }
+      if (last) {
+        delete (last);
+      }
+      this->notDeleted = false;
+    }
+  }
+
   void push(T&& value) {
     if (!this->start->value) {
-      last->value = std::move(value);
-      last->link = NULL;
-      this->start = this->last;
+      start->value = std::move(value);
+      start->link = nullptr;
+      this->last = this->start;
       return;
     }
-    Element<T>* temp;
-    Element<T>* oldlink;
-    //    temp = (Element<T>*)malloc(sizeof(Element<T>));
-    temp = new Element<T>;
-    oldlink = last->link;
+    Element<T>* temp = new Element<T>;
     last->link = temp;
     temp->value = std::move(value);
-    temp->link = oldlink;
+    temp->link = nullptr;
     this->last = temp;
-  };
+  }
 
   void push(const T& value) {
     if (!this->start->value) {
       last->value = value;
-      last->link = NULL;
+      last->link = nullptr;
       this->start = this->last;
       return;
     }
-    Element<T>* temp;
-    Element<T>* oldlink;
-    temp = new Element<T>;
-    oldlink = last->link;
+    Element<T>* temp = new Element<T>;
     last->link = temp;
     temp->value = value;
-    temp->link = oldlink;
+    temp->link = nullptr;
     this->last = temp;
-  };
-  void pop() {
-    Element<T>* temp;
-    temp = this->start;
-    while (temp->link != this->last) {
-      temp = temp->link;
-    }
-    temp->link = last->link;
-    delete (last);
-    this->last = temp;
-  };
-  const T& head() const { return this->last->value; };
-  Stack<T>& operator=(const Stack<T>& right) = delete;
-  Stack<T>& operator=(Stack<T>&& right) {
-    if (this->last == this->start) {
-      delete (this->last);
-    } else {
-      delete (this->last);
-      delete (this->start);
-    }
-
-    this->last = std::move(right.last);
-    this->start = std::move(right.start);
-    right.last = nullptr;
-    right.start = nullptr;
-    return *this;
   }
-  ~Stack() {
-//    TODO
+
+  void pop() {
+    if (!this->start->link) {
+      return;
+    } else {
+      Element<T>* temp = this->start;
+      while (temp->link != this->last) {
+        temp = temp->link;
+      }
+      if (last) {
+        delete (last);
+        temp->link = nullptr;
+      }
+      this->last = temp;
+      return;
+    }
+  }
+
+  const T& head() const { return this->last->value; }
+
+  Stack<T>& operator=(const Stack<T>& right) = delete;
+
+  Stack<T>& operator=(Stack<T>&& right) {
+    if ((this->start != right.start) || (this->last != right.last)) {
+      this->~Stack();
+      this->start = std::move(right.start);
+      this->last = std::move(right.last);
+      notDeleted = true;
+    }
+    return *this;
   }
 };
 
 auto example() -> void;
 
-#endif  // INCLUDE_EXAMPLE_HPP_
+#endif  // INCLUDE_FISEX_HPP_

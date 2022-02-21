@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <utility>
 
-#include "fisex.hpp"
 
 template <typename T>
 class StackSec {
@@ -16,43 +15,43 @@ class StackSec {
 
  public:
   StackSec() {
-    this->start = new Element<T>;
-    this->last = this->start;
+    start = new Element<T>;
+    last = start;
   }
 
   explicit StackSec(T&& valueStart) {
-    this->start = new Element<T>;
-    start->value = valueStart;
+    start = new Element<T>;
+    start->value = std::move(valueStart);
     start->link = nullptr;
-    this->last = this->start;
+    last = start;
   }
 
   explicit StackSec(const T& valueStart) = delete;
 
   ~StackSec() {
     Element<T>* temp;
-    if (this->notDeleted) {
-      while (this->start->link) {
-        temp = this->start;
-        while (temp->link != this->last) {
+    if (notDeleted) {
+      while (start->link) {
+        temp = start;
+        while (temp->link != last) {
           temp = temp->link;
         }
         if (last) {
           delete (last);
           temp->link = nullptr;
         }
-        this->last = temp;
+        last = temp;
       }
       if (last) {
         delete (last);
       }
-      this->notDeleted = false;
+      notDeleted = false;
     }
   }
 
   template <typename... Args>
   void push_emplace(Args&&... args) {
-    if (!this->start->value) {
+    if (!start->value) {
       last->value = {std::forward<Args>(args)...};
       last->link = nullptr;
       return;
@@ -61,11 +60,11 @@ class StackSec {
     last->link = temp;
     temp->value = {std::forward<Args>(args)...};
     temp->link = nullptr;
-    this->last = temp;
+    last = temp;
   }
 
   void push(T&& value) {
-    if (!this->start->value) {
+    if (!start->value) {
       last->value = std::move(value);
       last->link = nullptr;
       return;
@@ -73,18 +72,18 @@ class StackSec {
     Element<T>* temp = new Element<T>;
     temp->value = std::move(value);
     temp->link = nullptr;
-    this->last = temp;
+    last = temp;
   }
 
-  const T& head() const { return this->last->value; }
+  const T& head() const { return last->value; }
 
   T pop() {
-    if (!this->start->link) {
+    if (!start->link) {
       T value = last->value;
       return value;
     } else {
-      Element<T>* temp = this->start;
-      while (temp->link != this->last) {
+      Element<T>* temp = start;
+      while (temp->link != last) {
         temp = temp->link;
       }
       T value = last->value;
@@ -92,22 +91,27 @@ class StackSec {
         delete (last);
         temp->link = nullptr;
       }
-      this->last = temp;
+      last = temp;
       return value;
     }
   }
 
-  Stack<T>& operator=(const Stack<T>& right) = delete;
+  StackSec<T>& operator=(const StackSec<T>& right) = delete;
 
-  Stack<T>& operator=(Stack<T>&& right) {
-    if ((this->start != right.start) || (this->last != right.last)) {
-      this->~Stack();
-      this->start = std::move(right.start);
-      this->last = std::move(right.last);
+  StackSec<T>& operator=(StackSec<T>&& right) {
+    if ((start != right.start) || (last != right.last)) {
+      ~StackSec();
+      start = std::move(right.start);
+      last = std::move(right.last);
       notDeleted = true;
     }
     return *this;
   }
+  StackSec(StackSec&& value){
+    start = std::move(value.start);
+    last = std::move(value.last);
+  }
+
 };
 
 #endif  // INCLUDE_SECEX_HPP_

@@ -2,6 +2,7 @@
 #include <string>
 #include "fisex.hpp"
 #include "secex.hpp"
+#include "type_traits"
 
 TEST(FirstStack, ConstructorTest) {
   Stack<int> stack(234);
@@ -56,7 +57,7 @@ class SomeType {
     ft = -1;
   }
 
-  SomeType(int fi) {
+  explicit SomeType(int fi) {
     this->f = fi;
     this->ft = 0;
   }
@@ -97,7 +98,28 @@ class SomeType {
 TEST(Stack2Test, pushEmplaceTest) {
   StackSec<SomeType> stack2(SomeType{11 });
   stack2.push_emplace(22, 22.0);
-  stack2.push_emplace(13);
   stack2.push_emplace(33, 33.0);
   ASSERT_EQ(stack2.head().string(), "33 33.000000");
+}
+
+TEST(StackTest, move_and_copy_constructions){
+  EXPECT_TRUE(std::is_move_constructible<Stack<int>>::value);
+  EXPECT_TRUE(std::is_move_assignable<Stack<int>>::value);
+  EXPECT_TRUE(std::is_move_constructible<Stack<SomeType>>::value);
+  EXPECT_TRUE(std::is_move_assignable<Stack<SomeType>>::value);
+  EXPECT_FALSE(std::is_copy_constructible<Stack<int>>::value);
+  EXPECT_FALSE(std::is_copy_assignable<Stack<int>>::value);
+  EXPECT_FALSE(std::is_copy_constructible<Stack<SomeType>>::value);
+  EXPECT_FALSE(std::is_copy_assignable<Stack<SomeType>>::value);
+}
+
+TEST(StackSecTest, move_and_copy_constructions){
+  EXPECT_TRUE(std::is_move_constructible<StackSec<int>>::value);
+  EXPECT_TRUE(std::is_move_assignable<StackSec<int>>::value);
+  EXPECT_TRUE(std::is_move_constructible<StackSec<SomeType>>::value);
+  EXPECT_TRUE(std::is_move_assignable<StackSec<SomeType>>::value);
+  EXPECT_FALSE(std::is_copy_constructible<StackSec<int>>::value);
+  EXPECT_FALSE(std::is_copy_assignable<StackSec<int>>::value);
+  EXPECT_FALSE(std::is_copy_constructible<StackSec<SomeType>>::value);
+  EXPECT_FALSE(std::is_copy_assignable<StackSec<SomeType>>::value);
 }
